@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React + Django + Arduino — Fluxo do Programa</title>
+  <style>
+    :root{
+      --paper:#ffffff; --ink:#1f2937; --muted:#475569; --accent:#2563eb; --accent2:#7c3aed;
+      --soft:#f8fafc; --line:#e5e7eb;
+      --code-bg:#1e1e1e; --code-border:#2d2d30; --code-text:#d4d4d4;
+      --kw:#569cd6; --fn:#dcdcaa; --str:#ce9178; --num:#b5cea8; --com:#6a9955; --type:#4ec9b0; --prop:#9cdcfe;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:#cbd5e1;color:var(--ink);font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.58}
+    .page{width:210mm;min-height:297mm;margin:10mm auto;background:var(--paper);box-shadow:0 10px 30px rgba(15,23,42,.15);padding:18mm 16mm;position:relative}
+    .cover{
+      display:flex;flex-direction:column;justify-content:center;min-height:260mm;
+      background:
+        radial-gradient(circle at top right, rgba(37,99,235,.12), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(124,58,237,.10), transparent 28%);
+      border:1px solid #dbeafe;
+    }
+    .pill{display:inline-block;padding:8px 14px;border-radius:999px;background:#eff6ff;color:var(--accent);font-weight:700;border:1px solid #bfdbfe;width:max-content;margin-bottom:18px}
+    h1{font-size:31px;line-height:1.15;margin:0 0 14px;color:#0f172a;text-decoration:underline;text-decoration-thickness:3px;text-decoration-color:#93c5fd;text-underline-offset:6px}
+    .subtitle{font-size:18px;color:#334155;margin:0 0 20px}
+    .hero{margin-top:22px;padding:18px 20px;border-left:6px solid var(--accent);background:#f8fbff;border-radius:14px}
+    h2{font-size:24px;margin:0 0 10px;color:#111827;font-style:italic;text-decoration:underline;text-decoration-color:#c4b5fd;text-decoration-thickness:2px;text-underline-offset:5px}
+    h3{font-size:18px;margin:22px 0 8px;color:#0f172a;background:linear-gradient(transparent 62%, #dbeafe 62%);display:inline;padding-right:6px}
+    p{margin:10px 0}
+    .lead{font-size:16px;color:#334155}
+    .toc,.box,.note,.tip,.warn,.flow{
+      border-radius:14px;padding:14px 16px;margin:14px 0;border:1px solid
+    }
+    .toc{background:#f8fafc;border-color:#e2e8f0}
+    .box{background:#fff;border-color:#e5e7eb}
+    .note{background:#f8fafc;border-color:#cbd5e1}
+    .tip{background:#ecfeff;border-color:#a5f3fc}
+    .warn{background:#fef2f2;border-color:#fecaca}
+    .flow{background:#eff6ff;border-color:#bfdbfe;color:#1e3a8a;font-weight:700}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px 16px}
+    .card h4{margin:0 0 8px;font-size:16px;color:#0f172a}
+    ul,ol{margin:8px 0 10px 24px}
+    li{margin:5px 0}
+    .separator{height:2px;background:linear-gradient(to right, #93c5fd, #c4b5fd, transparent);margin:20px 0 24px;border:none}
+
+    .codeblock{margin:14px 0 18px;border:1px solid var(--code-border);border-radius:14px;overflow:hidden;background:var(--code-bg);box-shadow:0 8px 20px rgba(2,6,23,.18)}
+    .code-header{background:#252526;color:#c5c5c5;padding:10px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #333}
+    .dots{display:flex;gap:8px}.dot{width:11px;height:11px;border-radius:50%}.red{background:#ff5f56}.yellow{background:#ffbd2e}.green{background:#27c93f}
+    pre{margin:0;padding:14px 16px;overflow:auto;color:var(--code-text);font-size:13.5px;line-height:1.5;font-family:Consolas,'Courier New',monospace;white-space:pre-wrap}
+    .kw{color:var(--kw)} .fn{color:var(--fn)} .str{color:var(--str)} .num{color:var(--num)} .com{color:var(--com)} .type{color:var(--type)} .prop{color:var(--prop)}
+    .footer{margin-top:28px;padding-top:14px;border-top:1px dashed #cbd5e1;color:#64748b;font-size:13px}
+    @page{size:A4;margin:12mm}
+    @media print{
+      body{background:#fff}
+      .page{margin:0;box-shadow:none;page-break-after:always}
+      .page:last-child{page-break-after:auto}
+    }
+  </style>
+</head>
+<body>
+  <section class="page cover">
+    <div class="pill">APOSTILA PARA IMPRESSÃO</div>
+    <h1>React + Django + Arduino</h1>
+    <p class="subtitle"><strong>Entendendo o caminho completo do sistema</strong>, desde o clique no botão da interface até a ação real no hardware.</p>
+    <div class="hero">
+      <p><strong>Objetivo:</strong> explicar de forma detalhada como o seu programa funciona internamente.</p>
+      <p><strong>Foco:</strong> organização do projeto, fluxo completo do LED, caminho inverso com botão físico e exemplo de expansão para controle de motor.</p>
+    </div>
+  </section>
+
+  <section class="page">
+    <h2>Sumário</h2>
+    <div class="toc">
+      <ol>
+        <li>Como o programa está organizado</li>
+        <li>Caminho completo: da tela até o LED acender</li>
+        <li>Caminho contrário: botão físico no Arduino</li>
+        <li>Papel de cada arquivo no projeto</li>
+        <li>Por que usar WebSocket e não fetch</li>
+        <li>Exemplo: adicionar um botão para ligar um motor</li>
+        <li>A ideia central do sistema</li>
+        <li>Mentalidade certa para crescer o projeto</li>
+        <li>Resumo final</li>
+      </ol>
+    </div>
+
+    <hr class="separator" />
+
+    <h2>1. Como o seu programa está organizado</h2>
+    <p class="lead">Seu projeto está dividido em <strong>3 partes principais</strong>. Cada uma tem uma responsabilidade bem específica.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h4>A. React</h4>
+        <p>É a <strong>interface</strong>.</p>
+        <ul>
+          <li>Botão na tela</li>
+          <li>Texto “conectado”</li>
+          <li>Texto “LED ligado/desligado”</li>
+        </ul>
+        <p>O React <strong>não acende o LED diretamente</strong>. Ele apenas envia uma mensagem.</p>
+      </div>
+      <div class="card">
+        <h4>B. Django + Channels</h4>
+        <p>É o <strong>meio de campo</strong>.</p>
+        <ul>
+          <li>Recebe mensagem do React pelo WebSocket</li>
+          <li>Manda comando para o Arduino pela serial USB</li>
+          <li>Recebe resposta do Arduino</li>
+          <li>Repassa essa resposta ao React</li>
+        </ul>
+        <p>Na prática, o Django funciona como uma <strong>ponte</strong>.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>C. Arduino</h4>
+      <p>É quem controla o <strong>hardware real</strong>.</p>
+      <ul>
+        <li>Lê o botão físico</li>
+        <li>Acende e apaga o LED</li>
+        <li>Recebe comandos do computador</li>
+        <li>Avisa de volta qual é o estado atual</li>
+      </ul>
+    </div>
+
+    <div class="flow">React → WebSocket → Django → Serial → Arduino → Hardware</div>
+  </section>
+
+  <section class="page">
+    <h2>2. Caminho completo: da tela até o LED acender</h2>
+    <p>Agora vamos seguir o sinal, etapa por etapa, até o LED realmente acender.</p>
+
+    <h3>Etapa 1 — você clica no botão da interface</h3>
+    <p>No React, existe um botão assim:</p>
+    <div class="codeblock"><div class="code-header"><span>App.tsx</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>&lt;<span class="type">button</span> onClick={() =&gt; <span class="fn">sendCommand</span>(<span class="str">'ON'</span>)}&gt;Ligar&lt;/<span class="type">button</span>&gt;</pre></div>
+    <p>Quando você clica, o React executa a função <strong>sendCommand('ON')</strong>.</p>
+
+    <h3>Etapa 2 — a função sendCommand() roda</h3>
+    <div class="codeblock"><div class="code-header"><span>App.tsx</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">const</span> <span class="fn">sendCommand</span> = (command: <span class="type">string</span>) =&gt; {
+  <span class="kw">if</span> (socketRef.current &amp;&amp; socketRef.current.readyState === WebSocket.OPEN) {
+    socketRef.current.send(JSON.stringify({ command }))
+  }
+}</pre></div>
+
+    <div class="note">
+      <strong>O que acontece aqui:</strong>
+      <ul>
+        <li><strong>socketRef.current</strong> é a conexão WebSocket aberta com o Django.</li>
+        <li><strong>readyState === WebSocket.OPEN</strong> verifica se a conexão está aberta.</li>
+        <li><strong>send(JSON.stringify({ command }))</strong> envia a mensagem ao backend.</li>
+      </ul>
+    </div>
+
+    <p>O React manda algo assim:</p>
+    <div class="codeblock"><div class="code-header"><span>mensagem.json</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>{<span class="prop">"command"</span>:<span class="str">"ON"</span>}</pre></div>
+
+    <h3>Etapa 3 — o Django recebe a mensagem no consumer</h3>
+    <div class="codeblock"><div class="code-header"><span>consumers.py</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">async def</span> <span class="fn">receive</span>(self, text_data):
+    data = json.loads(text_data)
+    command = data.get(<span class="str">"command"</span>)
+
+    <span class="kw">if</span> command == <span class="str">"ON"</span>:
+        send_command_to_arduino(<span class="str">"ON"</span>)
+    <span class="kw">elif</span> command == <span class="str">"OFF"</span>:
+        send_command_to_arduino(<span class="str">"OFF"</span>)
+    <span class="kw">elif</span> command == <span class="str">"TOGGLE"</span>:
+        send_command_to_arduino(<span class="str">"TOGGLE"</span>)</pre></div>
+
+    <p><strong>text_data</strong> chega como texto puro, por exemplo <strong>{"command":"ON"}</strong>. Depois o <strong>json.loads</strong> transforma isso em dicionário Python e o Django extrai o valor do comando.</p>
+
+    <h3>Etapa 4 — o Django escreve na serial USB</h3>
+    <div class="codeblock"><div class="code-header"><span>serial_manager.py</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">def</span> <span class="fn">send_command_to_arduino</span>(command):
+    <span class="kw">global</span> arduino
+    <span class="kw">if</span> arduino <span class="kw">and</span> arduino.is_open:
+        arduino.write((command + <span class="str">'\n'</span>).encode())</pre></div>
+
+    <div class="tip">
+      <strong>Ponto importante:</strong> o <strong>\n</strong> é a quebra de linha. Ela é importante porque no Arduino a leitura está sendo feita com <strong>Serial.readStringUntil('\n')</strong>.
+    </div>
+
+    <p>Na prática, o Django manda para o Arduino:</p>
+    <div class="codeblock"><div class="code-header"><span>serial.txt</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>ON</pre></div>
+  </section>
+
+  <section class="page">
+    <h2>3. Continuação do fluxo até o LED acender</h2>
+
+    <h3>Etapa 5 — o Arduino recebe o comando</h3>
+    <div class="codeblock"><div class="code-header"><span>Arduino</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">void</span> <span class="fn">handleSerial</span>() {
+  <span class="kw">if</span> (Serial.available() &gt; <span class="num">0</span>) {
+    String command = Serial.readStringUntil(<span class="str">'\n'</span>);
+    command.trim();
+
+    <span class="kw">if</span> (command == <span class="str">"ON"</span>) {
+      ledState = <span class="kw">true</span>;
+      <span class="fn">updateLed</span>();
+      <span class="fn">sendLedState</span>();
+    }
+    <span class="kw">else if</span> (command == <span class="str">"OFF"</span>) {
+      ledState = <span class="kw">false</span>;
+      <span class="fn">updateLed</span>();
+      <span class="fn">sendLedState</span>();
+    }
+    <span class="kw">else if</span> (command == <span class="str">"TOGGLE"</span>) {
+      ledState = !ledState;
+      <span class="fn">updateLed</span>();
+      <span class="fn">sendLedState</span>();
+    }
+  }
+}</pre></div>
+
+    <p>O Arduino verifica se chegou dado pela serial, lê até a quebra de linha, remove espaços extras e compara o comando recebido.</p>
+
+    <h3>Etapa 6 — o Arduino acende o LED de verdade</h3>
+    <p>Depois ele chama:</p>
+    <div class="codeblock"><div class="code-header"><span>Arduino</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="fn">updateLed</span>();</pre></div>
+
+    <p>que executa:</p>
+    <div class="codeblock"><div class="code-header"><span>Arduino</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">void</span> <span class="fn">updateLed</span>() {
+  digitalWrite(ledPin, ledState ? HIGH : LOW);
+}</pre></div>
+
+    <p>Se <strong>ledState</strong> for <strong>true</strong>, então o Arduino faz:</p>
+    <div class="codeblock"><div class="code-header"><span>Arduino</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>digitalWrite(ledPin, HIGH);</pre></div>
+
+    <div class="flow">É aqui que o hardware realmente muda e o LED acende.</div>
+
+    <h3>Etapa 7 — o Arduino avisa o computador do novo estado</h3>
+    <p>Logo depois ele chama:</p>
+    <div class="codeblock"><div class="code-header"><span>Arduino</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="fn">sendLedState</span>();</pre></div>
+
+    <p>que faz:</p>
+    <div class="codeblock"><div class="code-header"><span>Arduino</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">void</span> <span class="fn">sendLedState</span>() {
+  <span class="kw">if</span> (ledState) {
+    Serial.println(<span class="str">"LED_ON"</span>);
+  } <span class="kw">else</span> {
+    Serial.println(<span class="str">"LED_OFF"</span>);
+  }
+}</pre></div>
+
+    <p>Isso é muito importante, porque a interface não deve <strong>assumir</strong> que o LED acendeu. Ela deve receber a <strong>confirmação real</strong> do Arduino.</p>
+
+    <h3>Etapa 8 — o Django escuta a serial o tempo todo</h3>
+    <div class="codeblock"><div class="code-header"><span>serial_manager.py</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">def</span> <span class="fn">listen_to_arduino</span>():
+    <span class="kw">global</span> arduino
+    channel_layer = get_channel_layer()
+
+    <span class="kw">while True</span>:
+        <span class="kw">try</span>:
+            <span class="kw">if</span> arduino <span class="kw">and</span> arduino.is_open <span class="kw">and</span> arduino.in_waiting &gt; <span class="num">0</span>:
+                line = arduino.readline().decode().strip()
+
+                <span class="kw">if</span> line == <span class="str">'LED_ON'</span>:
+                    async_to_sync(channel_layer.group_send)(
+                        <span class="str">'led_group'</span>,
+                        {
+                            <span class="str">'type'</span>: <span class="str">'led_status'</span>,
+                            <span class="str">'state'</span>: <span class="str">'ON'</span>
+                        }
+                    )
+
+                <span class="kw">elif</span> line == <span class="str">'LED_OFF'</span>:
+                    async_to_sync(channel_layer.group_send)(
+                        <span class="str">'led_group'</span>,
+                        {
+                            <span class="str">'type'</span>: <span class="str">'led_status'</span>,
+                            <span class="str">'state'</span>: <span class="str">'OFF'</span>
+                        }
+                    )</pre></div>
+
+    <p>Essa thread funciona como um <strong>vigia da serial</strong>: ela fica olhando continuamente se o Arduino mandou alguma coisa.</p>
+  </section>
+
+  <section class="page">
+    <h2>4. Final do fluxo até a interface atualizar</h2>
+
+    <h3>Etapa 9 — o consumer envia isso para o React</h3>
+    <div class="codeblock"><div class="code-header"><span>consumers.py</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">async def</span> <span class="fn">led_status</span>(self, event):
+    <span class="kw">await</span> self.send(text_data=json.dumps({
+        <span class="str">"type"</span>: <span class="str">"led_status"</span>,
+        <span class="str">"state"</span>: event[<span class="str">"state"</span>]
+    }))</pre></div>
+
+    <p>Então o Django manda para o frontend uma mensagem assim:</p>
+    <div class="codeblock"><div class="code-header"><span>mensagem_saida.json</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>{
+  <span class="prop">"type"</span>: <span class="str">"led_status"</span>,
+  <span class="prop">"state"</span>: <span class="str">"ON"</span>
+}</pre></div>
+
+    <h3>Etapa 10 — o React recebe a mensagem</h3>
+    <div class="codeblock"><div class="code-header"><span>App.tsx</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>socket.onmessage = (event: MessageEvent) =&gt; {
+  <span class="kw">const</span> data = JSON.parse(event.data)
+
+  <span class="kw">if</span> (data.type === <span class="str">'led_status'</span>) {
+    setLedState(data.state === <span class="str">'ON'</span> ? <span class="str">'Ligado'</span> : <span class="str">'Desligado'</span>)
+  }
+}</pre></div>
+
+    <p>Quando <strong>setLedState(...)</strong> é executado, o React atualiza o estado do componente e renderiza a tela novamente. Aí aparece para o usuário:</p>
+    <ul>
+      <li><strong>Ligado</strong></li>
+      <li>ou <strong>Desligado</strong></li>
+    </ul>
+
+    <div class="flow">Tela → React → WebSocket → Django → Serial → Arduino → Serial → Django → WebSocket → React → Tela</div>
+
+    <h2>5. O caminho contrário: botão físico no Arduino</h2>
+    <p>Agora vamos ver o fluxo no sentido inverso.</p>
+
+    <h3>Você aperta o botão físico</h3>
+    <p>O Arduino roda continuamente o loop principal:</p>
+    <div class="codeblock"><div class="code-header"><span>Arduino</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="fn">handleButton</span>();
+  <span class="fn">handleSerial</span>();
+}</pre></div>
+
+    <p>Então, a cada repetição, ele verifica o botão. Quando o botão físico é apertado, a função <strong>handleButton()</strong>:</p>
+    <ul>
+      <li>detecta o clique</li>
+      <li>troca <strong>ledState</strong></li>
+      <li>chama <strong>updateLed()</strong></li>
+      <li>chama <strong>sendLedState()</strong></li>
+    </ul>
+
+    <p>O resultado é:</p>
+    <ol>
+      <li>o LED muda fisicamente</li>
+      <li>o Arduino envia <strong>LED_ON</strong> ou <strong>LED_OFF</strong></li>
+      <li>o Django recebe pela serial</li>
+      <li>o Django manda pelo WebSocket</li>
+      <li>o React atualiza a tela</li>
+    </ol>
+
+    <div class="tip"><strong>Resultado final:</strong> o botão físico também atualiza a interface web.</div>
+  </section>
+
+  <section class="page">
+    <h2>6. Papel de cada arquivo no projeto</h2>
+
+    <div class="grid-2">
+      <div class="card">
+        <h4>App.tsx</h4>
+        <ul>
+          <li>Abrir WebSocket</li>
+          <li>Enviar comandos</li>
+          <li>Receber estados</li>
+          <li>Atualizar a tela</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>consumers.py</h4>
+        <ul>
+          <li>Receber mensagem do React</li>
+          <li>Chamar função que envia ao Arduino</li>
+          <li>Repassar mensagens ao React</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>serial_manager.py</h4>
+        <ul>
+          <li>Abrir a serial</li>
+          <li>Mandar comando para Arduino</li>
+          <li>Ler o que vem do Arduino</li>
+          <li>Repassar isso para o Channels</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>routing.py e asgi.py</h4>
+        <ul>
+          <li><strong>routing.py</strong> define qual URL usa qual consumer</li>
+          <li><strong>asgi.py</strong> habilita o Django para aceitar WebSocket</li>
+        </ul>
+      </div>
+    </div>
+
+    <p>Exemplo do <strong>routing.py</strong>:</p>
+    <div class="codeblock"><div class="code-header"><span>routing.py</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>re_path(<span class="str">r'ws/led/$'</span>, LedConsumer.as_asgi())</pre></div>
+
+    <p>Isso significa: quando alguém conectar em <strong>/ws/led/</strong>, use o <strong>LedConsumer</strong>.</p>
+
+    <h2>7. Por que usamos WebSocket e não fetch?</h2>
+    <p>Se você usasse <strong>fetch</strong>, o React teria que ficar perguntando o tempo todo:</p>
+    <ul>
+      <li>“e agora?”</li>
+      <li>“e agora?”</li>
+      <li>“e agora?”</li>
+    </ul>
+
+    <p>Isso se chama <strong>polling</strong>.</p>
+
+    <div class="note">
+      Com <strong>WebSocket</strong>, a conexão fica aberta. Então o backend avisa o React <strong>no exato momento em que algo muda</strong>.
+    </div>
+
+    <p>Isso é ideal para:</p>
+    <ul>
+      <li>sensores</li>
+      <li>LEDs</li>
+      <li>motores</li>
+      <li>estados de máquina</li>
+      <li>monitoramento em tempo real</li>
+    </ul>
+
+    <h2>8. Exemplo: adicionar um botão para ligar um motor</h2>
+    <p>Agora imagine que você quer adicionar um motor à lógica do projeto.</p>
+
+    <h3>6.1 No React</h3>
+    <p>Você adicionaria botões assim:</p>
+    <div class="codeblock"><div class="code-header"><span>App.tsx</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>&lt;<span class="type">button</span> onClick={() =&gt; <span class="fn">sendCommand</span>(<span class="str">'MOTOR_ON'</span>)}&gt;Ligar motor&lt;/<span class="type">button</span>&gt;
+&lt;<span class="type">button</span> onClick={() =&gt; <span class="fn">sendCommand</span>(<span class="str">'MOTOR_OFF'</span>)}&gt;Desligar motor&lt;/<span class="type">button</span>&gt;</pre></div>
+
+    <p>Então o React passa a mandar mensagens como estas:</p>
+    <div class="codeblock"><div class="code-header"><span>comando_motor.json</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>{<span class="prop">"command"</span>:<span class="str">"MOTOR_ON"</span>}
+{<span class="prop">"command"</span>:<span class="str">"MOTOR_OFF"</span>}</pre></div>
+
+    <h3>6.2 No Django — consumers.py</h3>
+    <div class="codeblock"><div class="code-header"><span>consumers.py</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">async def</span> <span class="fn">receive</span>(self, text_data):
+    data = json.loads(text_data)
+    command = data.get(<span class="str">"command"</span>)
+
+    <span class="kw">if</span> command == <span class="str">"ON"</span>:
+        send_command_to_arduino(<span class="str">"ON"</span>)
+    <span class="kw">elif</span> command == <span class="str">"OFF"</span>:
+        send_command_to_arduino(<span class="str">"OFF"</span>)
+    <span class="kw">elif</span> command == <span class="str">"TOGGLE"</span>:
+        send_command_to_arduino(<span class="str">"TOGGLE"</span>)
+    <span class="kw">elif</span> command == <span class="str">"MOTOR_ON"</span>:
+        send_command_to_arduino(<span class="str">"MOTOR_ON"</span>)
+    <span class="kw">elif</span> command == <span class="str">"MOTOR_OFF"</span>:
+        send_command_to_arduino(<span class="str">"MOTOR_OFF"</span>)</pre></div>
+
+    <p>O Django continua sendo apenas a ponte. Ele não precisa saber como o motor funciona por dentro.</p>
+  </section>
+
+  <section class="page">
+    <h2>9. Continuação do exemplo do motor</h2>
+
+    <h3>6.3 No Arduino</h3>
+    <p>Você pode definir um pino para o motor. Exemplo simples com relé ou sinal digital:</p>
+    <div class="codeblock"><div class="code-header"><span>Arduino</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">const int</span> motorPin = <span class="num">8</span>;</pre></div>
+
+    <p>No <strong>setup()</strong>:</p>
+    <div class="codeblock"><div class="code-header"><span>Arduino</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>pinMode(motorPin, OUTPUT);
+digitalWrite(motorPin, LOW);</pre></div>
+
+    <p>Na leitura serial:</p>
+    <div class="codeblock"><div class="code-header"><span>Arduino</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">void</span> <span class="fn">handleSerial</span>() {
+  <span class="kw">if</span> (Serial.available() &gt; <span class="num">0</span>) {
+    String command = Serial.readStringUntil(<span class="str">'\n'</span>);
+    command.trim();
+
+    <span class="kw">if</span> (command == <span class="str">"ON"</span>) {
+      ledState = <span class="kw">true</span>;
+      <span class="fn">updateLed</span>();
+      <span class="fn">sendLedState</span>();
+    }
+    <span class="kw">else if</span> (command == <span class="str">"OFF"</span>) {
+      ledState = <span class="kw">false</span>;
+      <span class="fn">updateLed</span>();
+      <span class="fn">sendLedState</span>();
+    }
+    <span class="kw">else if</span> (command == <span class="str">"TOGGLE"</span>) {
+      ledState = !ledState;
+      <span class="fn">updateLed</span>();
+      <span class="fn">sendLedState</span>();
+    }
+    <span class="kw">else if</span> (command == <span class="str">"MOTOR_ON"</span>) {
+      digitalWrite(motorPin, HIGH);
+      Serial.println(<span class="str">"MOTOR_ON"</span>);
+    }
+    <span class="kw">else if</span> (command == <span class="str">"MOTOR_OFF"</span>) {
+      digitalWrite(motorPin, LOW);
+      Serial.println(<span class="str">"MOTOR_OFF"</span>);
+    }
+  }
+}</pre></div>
+
+    <h3>6.4 No Django — serial_manager.py</h3>
+    <div class="codeblock"><div class="code-header"><span>serial_manager.py</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">if</span> line == <span class="str">'LED_ON'</span>:
+    async_to_sync(channel_layer.group_send)(
+        <span class="str">'led_group'</span>,
+        {
+            <span class="str">'type'</span>: <span class="str">'led_status'</span>,
+            <span class="str">'state'</span>: <span class="str">'ON'</span>
+        }
+    )
+
+<span class="kw">elif</span> line == <span class="str">'LED_OFF'</span>:
+    async_to_sync(channel_layer.group_send)(
+        <span class="str">'led_group'</span>,
+        {
+            <span class="str">'type'</span>: <span class="str">'led_status'</span>,
+            <span class="str">'state'</span>: <span class="str">'OFF'</span>
+        }
+    )
+
+<span class="kw">elif</span> line == <span class="str">'MOTOR_ON'</span>:
+    async_to_sync(channel_layer.group_send)(
+        <span class="str">'led_group'</span>,
+        {
+            <span class="str">'type'</span>: <span class="str">'motor_status'</span>,
+            <span class="str">'state'</span>: <span class="str">'ON'</span>
+        }
+    )
+
+<span class="kw">elif</span> line == <span class="str">'MOTOR_OFF'</span>:
+    async_to_sync(channel_layer.group_send)(
+        <span class="str">'led_group'</span>,
+        {
+            <span class="str">'type'</span>: <span class="str">'motor_status'</span>,
+            <span class="str">'state'</span>: <span class="str">'OFF'</span>
+        }
+    )</pre></div>
+
+    <h3>6.5 No consumer, criar envio do status do motor</h3>
+    <div class="codeblock"><div class="code-header"><span>consumers.py</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">async def</span> <span class="fn">motor_status</span>(self, event):
+    <span class="kw">await</span> self.send(text_data=json.dumps({
+        <span class="str">"type"</span>: <span class="str">"motor_status"</span>,
+        <span class="str">"state"</span>: event[<span class="str">"state"</span>]
+    }))</pre></div>
+
+    <h3>6.6 No React, receber status do motor</h3>
+    <p>Você criaria outro estado:</p>
+    <div class="codeblock"><div class="code-header"><span>App.tsx</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">const</span> [motorState, setMotorState] = useState&lt;<span class="type">string</span>&gt;(<span class="str">'Desligado'</span>)</pre></div>
+
+    <p>E no <strong>onmessage</strong>:</p>
+    <div class="codeblock"><div class="code-header"><span>App.tsx</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>socket.onmessage = (event: MessageEvent) =&gt; {
+  <span class="kw">const</span> data = JSON.parse(event.data)
+
+  <span class="kw">if</span> (data.type === <span class="str">'led_status'</span>) {
+    setLedState(data.state === <span class="str">'ON'</span> ? <span class="str">'Ligado'</span> : <span class="str">'Desligado'</span>)
+  }
+
+  <span class="kw">if</span> (data.type === <span class="str">'motor_status'</span>) {
+    setMotorState(data.state === <span class="str">'ON'</span> ? <span class="str">'Ligado'</span> : <span class="str">'Desligado'</span>)
+  }
+}</pre></div>
+
+    <p>E mostrar na tela:</p>
+    <div class="codeblock"><div class="code-header"><span>App.tsx</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>&lt;<span class="type">p</span>&gt;
+  &lt;<span class="type">strong</span>&gt;Estado do motor:&lt;/<span class="type">strong</span>&gt; {motorState}
+&lt;/<span class="type">p</span>&gt;</pre></div>
+
+    <h2>10. O mais importante de entender</h2>
+    <p>Seu sistema funciona como uma <strong>cadeia</strong>.</p>
+
+    <div class="box">
+      <p><strong>Quando vem da tela:</strong></p>
+      <p>React → WebSocket → Django → Serial → Arduino → hardware</p>
+    </div>
+
+    <div class="box">
+      <p><strong>Quando vem do botão físico ou sensor:</strong></p>
+      <p>Arduino → Serial → Django → WebSocket → React</p>
+    </div>
+  </section>
+
+  <section class="page">
+    <h2>11. Mentalidade certa para crescer o projeto</h2>
+    <p>Sempre pense em <strong>3 camadas</strong>:</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h4>Camada 1 — Interface</h4>
+        <p>Botões, textos, telas.</p>
+        <p><strong>React</strong></p>
+      </div>
+      <div class="card">
+        <h4>Camada 2 — Comunicação</h4>
+        <p>WebSocket e serial.</p>
+        <p><strong>Django</strong></p>
+      </div>
+      <div class="card">
+        <h4>Camada 3 — Hardware</h4>
+        <p>LED, motor, sensor, cilindro, relé.</p>
+        <p><strong>Arduino</strong></p>
+      </div>
+    </div>
+
+    <p>Se você organizar assim, fica muito mais fácil crescer para:</p>
+    <ul>
+      <li>motor de passo</li>
+      <li>sensores magnéticos</li>
+      <li>contador de raio</li>
+      <li>pistões pneumáticos</li>
+      <li>câmera</li>
+      <li>painel de status da máquina</li>
+    </ul>
+
+    <h2>12. Resumo bem simples</h2>
+    <p><strong>Quando você clica no botão da tela:</strong></p>
+    <ol>
+      <li>React envia comando pelo WebSocket</li>
+      <li>Django recebe</li>
+      <li>Django manda pela serial</li>
+      <li>Arduino recebe</li>
+      <li>Arduino acende o LED</li>
+      <li>Arduino confirma o novo estado</li>
+      <li>Django lê essa confirmação</li>
+      <li>Django manda para o React</li>
+      <li>React atualiza a tela</li>
+    </ol>
+
+    <p><strong>Quando aperta o botão físico:</strong></p>
+    <ol>
+      <li>Arduino detecta</li>
+      <li>Arduino muda o LED</li>
+      <li>Arduino envia o novo estado</li>
+      <li>Django recebe</li>
+      <li>Django manda ao React</li>
+      <li>React atualiza a tela</li>
+    </ol>
+
+    <div class="warn"><strong>Ideia central:</strong> React mostra, Django faz a ponte, Arduino executa.</div>
+
+    <div class="footer">
+      Material preparado em HTML para impressão em A4, com títulos destacados e blocos de código em estilo inspirado no VS Code.
+    </div>
+  </section>
+</body>
+</html>

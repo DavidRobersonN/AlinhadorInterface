@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raspberry + Django + Arduino — Lógica da Máquina</title>
+  <style>
+    :root{
+      --paper:#ffffff; --ink:#1f2937; --muted:#475569; --accent:#2563eb; --accent-2:#7c3aed;
+      --line:#e5e7eb; --soft:#f8fafc; --code-bg:#1e1e1e; --code-border:#2d2d30; --code-text:#d4d4d4;
+      --kw:#569cd6; --fn:#dcdcaa; --str:#ce9178; --num:#b5cea8; --com:#6a9955; --type:#4ec9b0; --prop:#9cdcfe;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:#cbd5e1;color:var(--ink);font-family:Segoe UI,Arial,Helvetica,sans-serif;line-height:1.55}
+    .page{width:210mm;min-height:297mm;margin:10mm auto;background:var(--paper);box-shadow:0 10px 30px rgba(15,23,42,.15);padding:18mm 16mm;position:relative}
+    .cover{display:flex;flex-direction:column;justify-content:center;min-height:260mm;background:
+      radial-gradient(circle at top right, rgba(37,99,235,.12), transparent 30%),
+      radial-gradient(circle at bottom left, rgba(124,58,237,.10), transparent 28%);border:1px solid #dbeafe}
+    .kicker{display:inline-block;padding:8px 14px;border-radius:999px;background:#eff6ff;color:var(--accent);font-weight:700;letter-spacing:.3px;margin-bottom:18px;border:1px solid #bfdbfe;width:max-content}
+    h1{font-size:32px;line-height:1.15;margin:0 0 14px;color:#0f172a;text-decoration:underline;text-decoration-thickness:3px;text-decoration-color:#93c5fd;text-underline-offset:6px}
+    .subtitle{font-size:18px;color:#334155;margin:0 0 18px}
+    .hero-box{margin-top:26px;padding:18px 20px;border-left:6px solid var(--accent);background:#f8fbff;border-radius:14px}
+    .meta{margin-top:28px;color:#475569;font-size:14px}
+    h2{font-size:24px;margin:0 0 10px;color:#111827;font-style:italic;text-decoration:underline;text-decoration-color:#c4b5fd;text-decoration-thickness:2px;text-underline-offset:5px}
+    h3{font-size:18px;margin:22px 0 8px;color:#0f172a;background:linear-gradient(transparent 62%, #dbeafe 62%);display:inline;padding-right:6px}
+    p{margin:10px 0}
+    .lead{font-size:16px;color:#334155}
+    .toc{background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:16px 20px}
+    .toc ol{margin:10px 0 0 18px;padding:0}
+    .toc li{margin:6px 0}
+    .note,.tip,.warning{border-radius:14px;padding:14px 16px;margin:14px 0;border:1px solid}
+    .note{background:#f8fafc;border-color:#cbd5e1}.tip{background:#ecfeff;border-color:#a5f3fc}.warning{background:#fef2f2;border-color:#fecaca}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px 16px}
+    .card h4{margin:0 0 8px;font-size:16px;color:#0f172a}
+    ul,ol{margin:8px 0 10px 24px}
+    li{margin:5px 0}
+    strong{color:#111827}
+    .flow{background:#eff6ff;border:1px solid #bfdbfe;border-radius:16px;padding:14px 18px;margin:12px 0;font-weight:600;color:#1e3a8a}
+    .separator{height:2px;background:linear-gradient(to right, #93c5fd, #c4b5fd, transparent);margin:20px 0 24px;border:none}
+    .codeblock{margin:14px 0 18px;border:1px solid var(--code-border);border-radius:14px;overflow:hidden;background:var(--code-bg);box-shadow:0 8px 20px rgba(2,6,23,.18)}
+    .code-header{background:#252526;color:#c5c5c5;padding:10px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #333}
+    .dots{display:flex;gap:8px}.dot{width:11px;height:11px;border-radius:50%}.dot.red{background:#ff5f56}.dot.yellow{background:#ffbd2e}.dot.green{background:#27c93f}
+    pre{margin:0;padding:14px 16px;overflow:auto;color:var(--code-text);font-size:13.5px;line-height:1.5;font-family:Consolas,'Courier New',monospace;tab-size:4;white-space:pre-wrap}
+    .kw{color:var(--kw)} .fn{color:var(--fn)} .str{color:var(--str)} .num{color:var(--num)} .com{color:var(--com)} .type{color:var(--type)} .prop{color:var(--prop)}
+    .footer{margin-top:30px;padding-top:14px;border-top:1px dashed #cbd5e1;color:#64748b;font-size:13px}
+    @page{size:A4;margin:12mm}
+    @media print{body{background:white}.page{margin:0;box-shadow:none;page-break-after:always}.page:last-child{page-break-after:auto}a{color:inherit;text-decoration:none}}
+  </style>
+</head>
+<body>
+  <section class="page cover">
+    <div class="kicker">APOSTILA PARA IMPRESSÃO</div>
+    <h1>Raspberry Pi + Django + Arduino</h1>
+    <p class="subtitle"><strong>Como deixar a lógica da máquina no Django</strong>, usando o Arduino como executor do hardware.</p>
+    <div class="hero-box">
+      <p><strong>Objetivo:</strong> explicar uma arquitetura profissional para sua máquina de alinhamento de rodas, onde o <strong>Raspberry Pi</strong> toma decisões, o <strong>Django</strong> coordena a lógica, o <strong>React</strong> mostra a interface e o <strong>Arduino</strong> cuida da parte física.</p>
+      <p><strong>Foco:</strong> leituras de sensores, decisões de correção, comunicação serial, WebSocket e um exemplo real de lógica para alinhamento.</p>
+    </div>
+    <div class="meta">
+      <div><strong>Formato:</strong> HTML estilizado para impressão em A4</div>
+      <div><strong>Estilo:</strong> títulos destacados + blocos de código com visual inspirado no VS Code</div>
+    </div>
+  </section>
+
+  <section class="page">
+    <h2>Sumário</h2>
+    <div class="toc">
+      <ol>
+        <li>Ideia geral da arquitetura</li>
+        <li>O que fica no Arduino e o que fica no Django</li>
+        <li>Quando faz sentido deixar a lógica no Django</li>
+        <li>Vantagens dessa arquitetura</li>
+        <li>O cuidado importante com tempo real</li>
+        <li>Fluxo prático do sistema</li>
+        <li>Exemplo de dados enviados pelo Arduino</li>
+        <li>Exemplo de decisão no Django</li>
+        <li>Exemplo com classe de controle</li>
+        <li>Como a comunicação pode funcionar</li>
+        <li>Exemplo de sequência automática</li>
+        <li>Organização recomendada dos arquivos</li>
+        <li>Conclusão prática</li>
+      </ol>
+    </div>
+
+    <hr class="separator" />
+    <h2>1. Ideia geral da arquitetura</h2>
+    <p class="lead">A ideia principal é transformar o <strong>Raspberry Pi</strong> no cérebro da máquina e deixar o <strong>Arduino</strong> como uma placa de <strong>entrada e saída física</strong>.</p>
+    <div class="grid-2">
+      <div class="card">
+        <h4>Arduino</h4>
+        <ul><li>Lê sensores</li><li>Aciona motor</li><li>Aciona cilindro</li><li>Executa comandos rápidos</li><li>Responde ao Raspberry</li></ul>
+      </div>
+      <div class="card">
+        <h4>Raspberry + Django</h4>
+        <ul><li>Interpreta leituras</li><li>Aplica regras de decisão</li><li>Decide apertar ou afrouxar</li><li>Coordena o processo</li><li>Envia status para a interface</li></ul>
+      </div>
+    </div>
+    <div class="flow">React ⇄ WebSocket ⇄ Django no Raspberry ⇄ Serial USB ⇄ Arduino ⇄ Sensores / Motores / Cilindros</div>
+    <h3>Leitura mental correta</h3>
+    <p>Em vez de colocar toda a inteligência dentro do microcontrolador, você pode deixar o Arduino responsável pelo <strong>mundo físico</strong> e o Django responsável pela <strong>lógica de decisão</strong>.</p>
+    <div class="tip"><strong>Resumo simples:</strong> Arduino = camada física. Django = camada de decisão.</div>
+
+    <h2>2. O que fica no Arduino e o que fica no Django</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h4>Bom deixar no Arduino</h4>
+        <ul><li>Leitura rápida de pinos</li><li>Debounce de botão</li><li>Controle fino de pulso de motor</li><li>Acionamento instantâneo de relé</li><li>Tempos críticos de hardware</li><li>Rotinas físicas imediatas</li></ul>
+      </div>
+      <div class="card">
+        <h4>Bom deixar no Django</h4>
+        <ul><li>Interpretação das leituras</li><li>Comparação com tolerâncias</li><li>Estratégia de alinhamento</li><li>Decisões de alto nível</li><li>Fluxo do processo</li><li>Histórico, interface e logs</li></ul>
+      </div>
+    </div>
+    <div class="warning"><strong>Cuidado importante:</strong> o Django não deve gerar pulsos de stepper com precisão de microsegundos. Esse tipo de controle fino continua sendo melhor no Arduino.</div>
+
+    <h2>3. Quando faz sentido deixar a lógica no Django</h2>
+    <p>Isso faz sentido quando a lógica começa a ficar mais inteligente, por exemplo:</p>
+    <ul>
+      <li><strong>Se</strong> o desvio lateral for maior que X e a tensão estiver abaixo de Y, <strong>então</strong> aperta 1/4 de volta.</li>
+      <li><strong>Se</strong> corrigiu demais, volta 1/8.</li>
+      <li><strong>Se</strong> a leitura vertical estiver fora do limite, usa outra estratégia.</li>
+      <li><strong>Se</strong> a tensão da região estiver muito alta, para de apertar.</li>
+      <li><strong>Se</strong> o raio atual não for o certo, gira a roda até o próximo.</li>
+    </ul>
+    <p>Esse tipo de combinação de regras fica muito mais confortável de escrever em <strong>Python</strong> do que dentro do código do Arduino.</p>
+
+    <h2>4. Vantagens dessa arquitetura</h2>
+    <ol>
+      <li><strong>Código mais organizado:</strong> regras complexas ficam mais limpas em Python.</li>
+      <li><strong>Mais fácil de crescer:</strong> você pode adicionar banco de dados, calibração, histórico, relatórios e logs.</li>
+      <li><strong>Mais fácil de alterar regras:</strong> mudar uma estratégia de correção no Django costuma ser bem mais simples.</li>
+      <li><strong>Melhor integração com interface:</strong> o Django já conversa com o React e consegue mostrar tudo em tempo real.</li>
+    </ol>
+    <div class="note"><strong>Na prática:</strong> o Django pode mostrar na tela o valor dos sensores, a decisão tomada, o estado do motor, a etapa atual da máquina e um histórico do que foi feito.</div>
+  </section>
+
+  <section class="page">
+    <h2>5. Fluxo prático do sistema</h2>
+    <p>Vamos imaginar sua máquina com estes itens:</p>
+    <ul><li>Sensor lateral</li><li>Sensor vertical</li><li>Sensor de tensão</li><li>Motor para girar nipple</li></ul>
+    <h3>Fluxo de alto nível</h3>
+    <ol>
+      <li>Arduino lê os sensores.</li><li>Arduino envia as leituras para o Raspberry.</li><li>Django interpreta as leituras.</li><li>Django decide o que fazer.</li><li>Django envia comando para o Arduino.</li><li>Arduino executa o movimento.</li><li>Arduino devolve confirmação.</li><li>Django pede nova leitura.</li><li>O ciclo se repete até ficar dentro da tolerância.</li>
+    </ol>
+    <div class="flow">LER SENSORES → AVALIAR → DECIDIR → EXECUTAR → MEDIR DE NOVO</div>
+
+    <h2>6. Exemplo de dados enviados pelo Arduino</h2>
+    <p>O Arduino pode mandar os dados pela serial em formato JSON.</p>
+    <div class="codeblock"><div class="code-header"><span>sensores.json</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>{
+  <span class="prop">"type"</span>: <span class="str">"sensor_data"</span>,
+  <span class="prop">"raio"</span>: <span class="num">12</span>,
+  <span class="prop">"lateral"</span>: <span class="num">1.8</span>,
+  <span class="prop">"vertical"</span>: <span class="num">0.6</span>,
+  <span class="prop">"tensao"</span>: <span class="num">92</span>
+}</pre></div>
+
+    <p>Ou também pode usar um formato de string simples pela serial:</p>
+    <div class="codeblock"><div class="code-header"><span>serial.txt</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>SENSORES:<span class="num">12</span>,<span class="num">1.8</span>,<span class="num">0.6</span>,<span class="num">92</span></pre></div>
+
+    <p>Nesse exemplo, significaria: raio 12, lateral 1.8, vertical 0.6 e tensão 92.</p>
+
+    <h2>7. Exemplo de decisão no Django</h2>
+    <p>Aqui o Raspberry recebe os valores e aplica uma regra. Um exemplo simples seria:</p>
+    <div class="codeblock"><div class="code-header"><span>avaliacao.py</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">def</span> <span class="fn">avaliar_alinhamento</span>(lateral, vertical, tensao):
+    <span class="kw">if</span> lateral &gt; <span class="num">1.5</span> <span class="kw">and</span> tensao &lt; <span class="num">100</span>:
+        <span class="kw">return</span> {
+            <span class="str">"acao"</span>: <span class="str">"apertar"</span>,
+            <span class="str">"passos"</span>: <span class="num">100</span>,
+            <span class="str">"motivo"</span>: <span class="str">"desvio lateral alto com tensão segura"</span>
+        }
+
+    <span class="kw">if</span> lateral &lt; -<span class="num">1.5</span> <span class="kw">and</span> tensao &lt; <span class="num">100</span>:
+        <span class="kw">return</span> {
+            <span class="str">"acao"</span>: <span class="str">"afrouxar"</span>,
+            <span class="str">"passos"</span>: <span class="num">100</span>,
+            <span class="str">"motivo"</span>: <span class="str">"desvio lateral para o lado oposto"</span>
+        }
+
+    <span class="kw">if</span> <span class="fn">abs</span>(vertical) &gt; <span class="num">1.0</span>:
+        <span class="kw">return</span> {
+            <span class="str">"acao"</span>: <span class="str">"corrigir_vertical"</span>,
+            <span class="str">"passos"</span>: <span class="num">50</span>,
+            <span class="str">"motivo"</span>: <span class="str">"desvio vertical acima do limite"</span>
+        }
+
+    <span class="kw">return</span> {
+        <span class="str">"acao"</span>: <span class="str">"nenhuma"</span>,
+        <span class="str">"passos"</span>: <span class="num">0</span>,
+        <span class="str">"motivo"</span>: <span class="str">"roda dentro da tolerância"</span>
+    }</pre></div>
+    <h3>O que essa função faz</h3>
+    <ul><li>Analisa desvio lateral.</li><li>Analisa desvio vertical.</li><li>Considera o limite de tensão.</li><li>Retorna uma decisão já pronta para ser executada.</li></ul>
+    <div class="tip"><strong>Vantagem:</strong> essa regra pode crescer com muito mais facilidade no Django do que no Arduino.</div>
+  </section>
+
+  <section class="page">
+    <h2>8. Exemplo de uso dessa lógica</h2>
+    <p>Suponha que o Django receba esta leitura:</p>
+    <div class="codeblock"><div class="code-header"><span>dados.py</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>dados = {
+    <span class="str">"lateral"</span>: <span class="num">1.8</span>,
+    <span class="str">"vertical"</span>: <span class="num">0.4</span>,
+    <span class="str">"tensao"</span>: <span class="num">90</span>,
+}</pre></div>
+
+    <p>Ele pode chamar a função assim:</p>
+    <div class="codeblock"><div class="code-header"><span>uso.py</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>decisao = <span class="fn">avaliar_alinhamento</span>(
+    lateral=dados[<span class="str">"lateral"</span>],
+    vertical=dados[<span class="str">"vertical"</span>],
+    tensao=dados[<span class="str">"tensao"</span>]
+)</pre></div>
+
+    <p>Resultado esperado:</p>
+    <div class="codeblock"><div class="code-header"><span>resultado.json</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>{
+    <span class="prop">"acao"</span>: <span class="str">"apertar"</span>,
+    <span class="prop">"passos"</span>: <span class="num">100</span>,
+    <span class="prop">"motivo"</span>: <span class="str">"desvio lateral alto com tensão segura"</span>
+}</pre></div>
+
+    <p>Depois disso, o Django poderia enviar este comando para o Arduino:</p>
+    <div class="codeblock"><div class="code-header"><span>serial_command.py</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="fn">send_command_to_arduino</span>(<span class="str">"APERTAR:100"</span>)</pre></div>
+
+    <h2>9. Exemplo mais próximo da sua máquina</h2>
+    <div class="codeblock"><div class="code-header"><span>machine_controller.py</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">class</span> <span class="type">ControladorAlinhamento</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        self.tolerancia_lateral = <span class="num">0.5</span>
+        self.tolerancia_vertical = <span class="num">0.5</span>
+        self.tensao_maxima = <span class="num">120</span>
+        self.tensao_minima = <span class="num">80</span>
+
+    <span class="kw">def</span> <span class="fn">decidir</span>(self, leitura):
+        lateral = leitura[<span class="str">"lateral"</span>]
+        vertical = leitura[<span class="str">"vertical"</span>]
+        tensao = leitura[<span class="str">"tensao"</span>]
+
+        <span class="kw">if</span> <span class="fn">abs</span>(lateral) &lt;= self.tolerancia_lateral <span class="kw">and</span> <span class="fn">abs</span>(vertical) &lt;= self.tolerancia_vertical:
+            <span class="kw">return</span> {<span class="str">"comando"</span>: <span class="str">"PARAR"</span>, <span class="str">"motivo"</span>: <span class="str">"Roda alinhada"</span>}
+
+        <span class="kw">if</span> lateral &gt; self.tolerancia_lateral:
+            <span class="kw">if</span> tensao &lt; self.tensao_maxima:
+                <span class="kw">return</span> {<span class="str">"comando"</span>: <span class="str">"APERTAR"</span>, <span class="str">"passos"</span>: <span class="num">100</span>, <span class="str">"motivo"</span>: <span class="str">"Corrigir lateral"</span>}
+            <span class="kw">return</span> {<span class="str">"comando"</span>: <span class="str">"PARAR"</span>, <span class="str">"motivo"</span>: <span class="str">"Tensão alta demais"</span>}
+
+        <span class="kw">if</span> lateral &lt; -self.tolerancia_lateral:
+            <span class="kw">if</span> tensao &gt; self.tensao_minima:
+                <span class="kw">return</span> {<span class="str">"comando"</span>: <span class="str">"AFROUXAR"</span>, <span class="str">"passos"</span>: <span class="num">100</span>, <span class="str">"motivo"</span>: <span class="str">"Corrigir lateral oposta"</span>}
+            <span class="kw">return</span> {<span class="str">"comando"</span>: <span class="str">"PARAR"</span>, <span class="str">"motivo"</span>: <span class="str">"Tensão baixa demais"</span>}
+
+        <span class="kw">return</span> {<span class="str">"comando"</span>: <span class="str">"PARAR"</span>, <span class="str">"motivo"</span>: <span class="str">"Sem ação"</span>}</pre></div>
+
+    <h3>Leitura desse código</h3>
+    <ul><li>Define tolerâncias.</li><li>Compara a leitura recebida com essas tolerâncias.</li><li>Decide entre apertar, afrouxar ou parar.</li><li>Também protege contra tensão muito alta ou muito baixa.</li></ul>
+
+    <h2>10. Como a comunicação pode funcionar</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h4>Arduino → Django</h4>
+        <p>Envia leituras de sensores.</p>
+        <div class="codeblock"><div class="code-header"><span>entrada_serial.txt</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>{<span class="prop">"type"</span>:<span class="str">"sensor_data"</span>,<span class="prop">"raio"</span>:<span class="num">12</span>,<span class="prop">"lateral"</span>:<span class="num">1.8</span>,<span class="prop">"vertical"</span>:<span class="num">0.6</span>,<span class="prop">"tensao"</span>:<span class="num">92</span>}</pre></div>
+      </div>
+      <div class="card">
+        <h4>Django → Arduino</h4>
+        <p>Envia comandos de execução.</p>
+        <div class="codeblock"><div class="code-header"><span>saida_serial.txt</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>APERTAR:<span class="num">100</span>
+AFROUXAR:<span class="num">100</span>
+GIRAR_RODA:<span class="num">200</span>
+LER_SENSORES
+PARAR</pre></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page">
+    <h2>11. Exemplo de sequência automática</h2>
+    <p>Imagine o seguinte ciclo automático de correção:</p>
+    <ol><li>Django manda: <strong>LER_SENSORES</strong></li><li>Arduino responde com os valores atuais.</li><li>Django interpreta os dados.</li><li>Django decide uma ação.</li><li>Arduino executa a ação.</li><li>Django pede nova leitura.</li><li>O processo repete até ficar dentro da tolerância.</li></ol>
+
+    <div class="codeblock"><div class="code-header"><span>ciclo_exemplo.txt</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="com"># Etapa 1</span>
+LER_SENSORES
+
+<span class="com"># Etapa 2</span>
+{<span class="prop">"type"</span>:<span class="str">"sensor_data"</span>,<span class="prop">"raio"</span>:<span class="num">8</span>,<span class="prop">"lateral"</span>:<span class="num">2.1</span>,<span class="prop">"vertical"</span>:<span class="num">0.3</span>,<span class="prop">"tensao"</span>:<span class="num">88</span>}
+
+<span class="com"># Etapa 3 - decisão do Django</span>
+{<span class="prop">"comando"</span>: <span class="str">"APERTAR"</span>, <span class="prop">"passos"</span>: <span class="num">100</span>}
+
+<span class="com"># Etapa 4</span>
+APERTAR:<span class="num">100</span>
+
+<span class="com"># Etapa 5</span>
+APERTAR_DONE
+
+<span class="com"># Etapa 6</span>
+LER_SENSORES
+
+<span class="com"># Etapa 7</span>
+{<span class="prop">"type"</span>:<span class="str">"sensor_data"</span>,<span class="prop">"raio"</span>:<span class="num">8</span>,<span class="prop">"lateral"</span>:<span class="num">0.9</span>,<span class="prop">"vertical"</span>:<span class="num">0.3</span>,<span class="prop">"tensao"</span>:<span class="num">95</span>}
+
+<span class="com"># Etapa 8 - nova decisão</span>
+APERTAR:<span class="num">50</span></pre></div>
+
+    <p>Esse é o tipo de comportamento que transforma o Django em um <strong>controle supervisor</strong> da máquina.</p>
+    <div class="note">Ele não precisa gerar cada pulso do motor. Ele só precisa decidir <strong>o que fazer</strong>, <strong>quando fazer</strong>, <strong>quanto fazer</strong> e <strong>quando parar</strong>.</div>
+
+    <h2>12. Organização recomendada dos arquivos</h2>
+    <div class="codeblock"><div class="code-header"><span>estrutura_backend.txt</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>backend/
+├── core/
+│   ├── serial_manager.py
+│   ├── machine_controller.py
+│   ├── consumers.py
+│   ├── models.py
+│   └── views.py
+└── config/</pre></div>
+
+    <h3>Papel de cada arquivo</h3>
+    <ul><li><strong>serial_manager.py</strong> — comunicação serial com Arduino</li><li><strong>machine_controller.py</strong> — regras de decisão da máquina</li><li><strong>consumers.py</strong> — WebSocket com o React</li><li><strong>models.py</strong> — histórico de leituras e ações</li></ul>
+
+    <h2>13. Exemplo simples de machine_controller.py</h2>
+    <div class="codeblock"><div class="code-header"><span>machine_controller.py</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre><span class="kw">class</span> <span class="type">MachineController</span>:
+    <span class="kw">def</span> <span class="fn">processar_leitura</span>(self, leitura):
+        lateral = leitura[<span class="str">"lateral"</span>]
+        vertical = leitura[<span class="str">"vertical"</span>]
+        tensao = leitura[<span class="str">"tensao"</span>]
+
+        <span class="kw">if</span> <span class="fn">abs</span>(lateral) &gt; <span class="num">1.5</span>:
+            <span class="kw">if</span> tensao &lt; <span class="num">110</span>:
+                <span class="kw">return</span> {<span class="str">"serial_command"</span>: <span class="str">"APERTAR:100"</span>, <span class="str">"status"</span>: <span class="str">"Corrigindo lateral"</span>}
+            <span class="kw">else</span>:
+                <span class="kw">return</span> {<span class="str">"serial_command"</span>: <span class="str">"PARAR"</span>, <span class="str">"status"</span>: <span class="str">"Tensão acima do limite"</span>}
+
+        <span class="kw">if</span> <span class="fn">abs</span>(vertical) &gt; <span class="num">1.0</span>:
+            <span class="kw">return</span> {<span class="str">"serial_command"</span>: <span class="str">"CORRIGIR_VERTICAL:50"</span>, <span class="str">"status"</span>: <span class="str">"Corrigindo vertical"</span>}
+
+        <span class="kw">return</span> {<span class="str">"serial_command"</span>: <span class="str">"PARAR"</span>, <span class="str">"status"</span>: <span class="str">"Dentro da tolerância"</span>}</pre></div>
+
+    <p>Quando chegar uma leitura do Arduino, o Django pode fazer algo assim:</p>
+    <div class="codeblock"><div class="code-header"><span>uso_controller.py</span><div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div></div>
+<pre>controller = <span class="type">MachineController</span>()
+decisao = controller.<span class="fn">processar_leitura</span>(leitura)
+<span class="fn">send_command_to_arduino</span>(decisao[<span class="str">"serial_command"</span>])</pre></div>
+
+    <h2>14. Conclusão prática</h2>
+    <p>Para a sua máquina, a arquitetura mais interessante é esta:</p>
+    <div class="grid-2">
+      <div class="card"><h4>No Arduino</h4><ul><li>Sensores</li><li>Motores</li><li>Cilindros</li><li>Rotinas rápidas</li><li>Comandos básicos</li></ul></div>
+      <div class="card"><h4>No Raspberry com Django</h4><ul><li>Lógica de alinhamento</li><li>Estratégia de correção</li><li>Comparação de leituras</li><li>Sequência do processo</li><li>Histórico e interface</li></ul></div>
+    </div>
+    <div class="warning"><strong>Regra de ouro:</strong> decisão inteligente no Django; controle físico fino no Arduino.</div>
+    <p>Essa separação deixa o projeto mais profissional, mais organizado e muito mais fácil de crescer no futuro.</p>
+    <div class="footer">Material preparado para impressão em A4. Conteúdo baseado na explicação desta conversa sobre a arquitetura Raspberry + Django + Arduino.</div>
+  </section>
+</body>
+</html>
