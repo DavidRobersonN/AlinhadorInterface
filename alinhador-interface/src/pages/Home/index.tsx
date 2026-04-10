@@ -1,10 +1,18 @@
 import { LedControlCard } from '../../components/led/LedControlCard'
-import { useLedSocket } from '../../hooks/useLedSocket'
+import { useMachineConnection } from '../../hooks/useMachineConnection'
+import { useLedControls } from '../../hooks/useLedControls'
 
 // Página principal da aplicação.
-// Ela conecta a lógica do hook com os componentes visuais.
+// Ela conecta a lógica dos hooks com o componente visual.
 export function HomePage() {
-  const { connected, ledState, turnLedOn, turnLedOff, toggleLed } = useLedSocket()
+  // Hook principal da conexão com a máquina
+  const { connected, lastMessage, send } = useMachineConnection()
+
+  // Hook específico do LED, usando a conexão principal
+  const { ledState, turnLedOn, turnLedOff, toggleLed } = useLedControls({
+    send,
+    lastMessage,
+  })
 
   return (
     <main className="app">
