@@ -1,0 +1,193 @@
+#include AccelStepper.h
+
+ =====================================
+ CONFIGURAÇÕES
+ =====================================
+
+ LED interno da placa Arduino
+#define LED_PIN LED_BUILTIN
+
+ Pinos do driver do motor de passo
+#define STEP_PIN 2
+#define DIR_PIN 3
+
+ =====================================
+ CLASSE MOTOR
+ =====================================
+
+class Motor {
+  public
+    Motor(int stepPin, int dirPin)
+       _motor(AccelStepperDRIVER, stepPin, dirPin)
+    {
+      _pinoStep = stepPin;
+      _pinoDir = dirPin;
+
+      _motor.setMaxSpeed(1000);
+    }
+
+    void giraMotor(int sent, int quantidadePassos) {
+      int contador = 0;
+
+      _motor.setSpeed(1000  sent);
+
+      while (contador  quantidadePassos) {
+        if (_motor.runSpeed()) {
+          contador++;
+        }
+      }
+    }
+
+    void darUmPasso(int sent) {
+      _motor.setSpeed(1000  sent);
+
+      while (!_motor.runSpeed()) {
+         espera até executar 1 passo
+      }
+    }
+
+  private
+    int _pinoStep;
+    int _pinoDir;
+    AccelStepper _motor;
+};
+
+ =====================================
+ OBJETOS
+ =====================================
+
+Motor motor(STEP_PIN, DIR_PIN);
+
+ Guarda o estado atual do LED
+bool ledLigado = false;
+
+ =====================================
+ FUNÇÕES DO LED
+ =====================================
+
+void atualizarLed(bool estado) {
+  ledLigado = estado;
+  digitalWrite(LED_PIN, ledLigado  HIGH  LOW);
+}
+
+void enviarStatusLed() {
+  if (ledLigado) {
+    Serial.println(LEDON);
+  } else {
+    Serial.println(LEDOFF);
+  }
+}
+
+void processarComandoLed(String comando) {
+  comando.trim();
+
+  if (comando == LEDON) {
+    atualizarLed(true);
+    enviarStatusLed();
+    return;
+  }
+
+  if (comando == LEDOFF) {
+    atualizarLed(false);
+    enviarStatusLed();
+    return;
+  }
+
+  if (comando == LEDTOGGLE) {
+    atualizarLed(!ledLigado);
+    enviarStatusLed();
+    return;
+  }
+
+  if (comando == LEDSTATUS) {
+    enviarStatusLed();
+    return;
+  }
+
+  Serial.println(ERROLED_COMANDO_INVALIDO);
+}
+
+ =====================================
+ FUNÇÕES DO MOTOR
+ =====================================
+
+void processarComandoMotor(String comando) {
+  comando.trim();
+
+   Espera algo como
+   MOTOR1800
+   MOTOR-1400
+
+  int primeiroSeparador = comando.indexOf('');
+  int segundoSeparador = comando.indexOf('', primeiroSeparador + 1);
+
+  if (primeiroSeparador == -1  segundoSeparador == -1) {
+    Serial.println(ERROFORMATO_MOTOR_INVALIDO);
+    return;
+  }
+
+  String sentidoStr = comando.substring(primeiroSeparador + 1, segundoSeparador);
+  String passosStr = comando.substring(segundoSeparador + 1);
+
+  int sentido = sentidoStr.toInt();
+  int passos = passosStr.toInt();
+
+  if (sentido != 1 && sentido != -1) {
+    Serial.println(ERROSENTIDO_INVALIDO);
+    return;
+  }
+
+  if (passos = 0) {
+    Serial.println(ERROPASSOS_INVALIDOS);
+    return;
+  }
+
+  motor.giraMotor(sentido, passos);
+
+  Serial.println(OKMOTOR_FINALIZADO);
+}
+
+ =====================================
+ PROCESSADOR GERAL
+ =====================================
+
+void processarComando(String comando) {
+  comando.trim();
+
+  if (comando.startsWith(LED)) {
+    processarComandoLed(comando);
+    return;
+  }
+
+  if (comando.startsWith(MOTOR)) {
+    processarComandoMotor(comando);
+    return;
+  }
+
+  Serial.println(ERROCOMANDO_DESCONHECIDO);
+}
+
+ =====================================
+ SETUP
+ =====================================
+
+void setup() {
+  Serial.begin(9600);
+
+  pinMode(LED_PIN, OUTPUT);
+  atualizarLed(false);
+
+  Serial.println(ARDUINO_PRONTO);
+  enviarStatusLed();
+}
+
+ =====================================
+ LOOP
+ =====================================
+
+void loop() {
+  if (Serial.available()) {
+    String comando = Serial.readStringUntil('n');
+    processarComando(comando);
+  }
+}
