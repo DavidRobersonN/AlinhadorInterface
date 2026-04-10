@@ -1,6 +1,5 @@
 from machine.services.serial_service import SerialService
 from machine.services.led_service import LedService
-from machine.services.motor_service import MotorService
 
 
 class MachineService:
@@ -13,7 +12,6 @@ class MachineService:
     def __init__(self):
         self.serial_service = SerialService()
         self.led_service = LedService(self.serial_service)
-        self.motor_service = MotorService(self.serial_service)
 
     def handle_command(self, data: dict) -> dict:
         action = data.get("action")
@@ -41,9 +39,6 @@ class MachineService:
 
         if action == "toggle_led":
             return self.led_service.toggle_led()
-
-        if action == "rotate_motor":
-            return self.motor_service.rotate_motor(data)
 
         return {
             "type": "error",

@@ -26,20 +26,3 @@ class LedService:
             "serial": serial_result,
         }
 
-    def toggle_led(self) -> dict:
-        serial_result = self.serial_service.send_command("LED_TOGGLE")
-
-        return {
-            "type": "led_toggle",
-            "message": "Comando para alternar LED enviado com sucesso",
-            "serial": serial_result,
-        }
-
-    def get_status(self) -> dict:
-        serial_result = self.serial_service.send_command("LED_STATUS")
-
-        return {
-            "type": "led_status_request",
-            "message": "Comando para consultar status do LED enviado com sucesso",
-            "serial": serial_result,
-        }
