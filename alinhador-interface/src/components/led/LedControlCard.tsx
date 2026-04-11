@@ -8,7 +8,6 @@ interface LedControlCardProps {
   ledState: LedState
   onTurnOn: () => void
   onTurnOff: () => void
-  onToggle: () => void
 }
 
 // Componente visual principal do módulo do LED.
@@ -18,8 +17,9 @@ export function LedControlCard({
   ledState,
   onTurnOn,
   onTurnOff,
-  onToggle,
 }: LedControlCardProps) {
+    console.log('LedControlCard renderizou. ledState =', ledState)
+
   return (
     <section className="card">
       <h1 className="title">LED com React + Django + Arduino</h1>
@@ -41,9 +41,6 @@ export function LedControlCard({
           Desligar
         </ActionButton>
 
-        <ActionButton onClick={onToggle} disabled={!connected}>
-          Alternar
-        </ActionButton>
       </div>
     </section>
   )

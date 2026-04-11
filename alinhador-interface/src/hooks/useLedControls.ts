@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { LedCommand, LedState, LedStatusMessage } from '../types/led'
-import type { MachineMessage } from '../types/machine'
+
+type LedPayload = {
+  command: LedCommand
+}
 
 type UseLedControlsParams = {
-  send: (payload: Record<string, unknown>) => boolean
-  lastMessage: MachineMessage | null
+  send: (payload: LedPayload) => boolean
+  lastMessage: LedStatusMessage | null
 }
 
 // Hook responsável apenas pela parte do LED.
@@ -19,8 +22,7 @@ export function useLedControls({ send, lastMessage }: UseLedControlsParams) {
     if (!lastMessage) return
 
     if (lastMessage.type === 'led_status') {
-      const data = lastMessage as LedStatusMessage
-      setLedState(data.state === 'ON' ? 'Ligado' : 'Desligado')
+      setLedState(lastMessage.state === 'ON' ? 'Ligado' : 'Desligado')
     }
   }, [lastMessage])
 

@@ -5,15 +5,27 @@ import { useLedControls } from '../../hooks/useLedControls'
 // Página principal da aplicação.
 // Ela conecta a lógica dos hooks com o componente visual.
 export function HomePage() {
-  // Hook principal da conexão com a máquina
+  // Hook principal responsável pela conexão WebSocket com o backend.
+  // Ele fornece:
+  // - o estado da conexão
+  // - a última mensagem recebida
+  // - a função genérica de envio de comandos
   const { connected, lastMessage, send } = useMachineConnection()
 
-  // Hook específico do LED, usando a conexão principal
-  const { ledState, turnLedOn, turnLedOff, toggleLed } = useLedControls({
+  // Hook responsável apenas pelas regras do LED.
+  // Ele recebe a função de envio e a última mensagem da conexão principal,
+  // e devolve:
+  // - o estado atual do LED para a interface
+  // - as ações prontas para ligar, desligar e alternar
+  const { ledState, turnLedOn, turnLedOff } = useLedControls({
     send,
     lastMessage,
   })
+    console.log('LedControlCard renderizou. ledState =', ledState)
 
+
+  // A página apenas repassa os dados e ações para o componente visual.
+  // Assim, a lógica fica nos hooks e a interface fica mais limpa.
   return (
     <main className="app">
       <LedControlCard
@@ -21,7 +33,6 @@ export function HomePage() {
         ledState={ledState}
         onTurnOn={turnLedOn}
         onTurnOff={turnLedOff}
-        onToggle={toggleLed}
       />
     </main>
   )

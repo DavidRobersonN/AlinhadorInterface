@@ -2,7 +2,7 @@
 export type LedState = 'Ligado' | 'Desligado' | 'Desconhecido'
 
 // Tipo para os comandos que o frontend envia ao backend.
-export type LedCommand = 'ON' | 'OFF' | 'TOGGLE'
+export type LedCommand = 'ON' | 'OFF' 
 
 // Tipo esperado para as mensagens recebidas do backend.
 // Exemplo:
