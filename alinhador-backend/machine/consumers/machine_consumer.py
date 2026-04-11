@@ -48,6 +48,7 @@ class MachineConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         """
+        CORAÇÃO DO CONSUMER: processamento das mensagens recebidas do frontend.
         Este método é executado automaticamente sempre que o frontend
         envia uma mensagem pelo WebSocket.
 
@@ -75,8 +76,12 @@ class MachineConsumer(WebsocketConsumer):
             # e qual service específico deve ser chamado.
             response = self.machine_service.handle_command(data)
 
+            """
+            Aqui, a variável response é a resposta do machine_service, que Vai para o Frontend.
+            """
             # Envia a resposta do backend de volta para o frontend,
             # novamente em formato JSON.
+            print("Resposta do backend para o frontend:", response)  # Log para depuração
             self.send(text_data=json.dumps(response))
 
         except json.JSONDecodeError:
