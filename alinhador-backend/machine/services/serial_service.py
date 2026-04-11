@@ -138,6 +138,7 @@ class SerialService:
 
                 # Converte a string para bytes em UTF-8 e envia para a serial.
                 self._serial.write(command.encode("utf-8"))
+                print(f"SerialService: Comando enviado pelo send_command para o Arduino: '{command.strip()}'")  # Log para depuração
                 # Força o envio imediato do buffer de escrita.
                 self._serial.flush()
 
@@ -181,6 +182,7 @@ class SerialService:
                 # errors="ignore" ignora caracteres inválidos.
                 # strip remove espaços e quebras de linha extras.
                 line = self._serial.readline().decode("utf-8", errors="ignore").strip()
+                print(f"SerialService: Linha lida pelo readLine da serial Vindo do Arduino: '{line}'")  # Log para depuração
 
             # Se a linha tiver conteúdo, retorna a string.
             # Se vier vazia, retorna None.
@@ -192,48 +194,4 @@ class SerialService:
 
             # Retorna None para indicar falha ou ausência de leitura.
             return None
-        
-
-    def send_command_and_read(self, command: str) -> dict:
-        """
-        Envia um comando para o Arduino e lê a resposta imediatamente,
-        tudo dentro do mesmo lock para evitar concorrência.
-        """
-
-        if not self.is_connected():
-            connected = self.connect()
-            if not connected:
-                return {
-                    "success": False,
-                    "error": "Não foi possível conectar à serial.",
-                }
-
-        try:
-            if not command.endswith("\n"):
-                command += "\n"
-
-            with self._lock:
-                if self._serial is None:
-                    return {
-                        "success": False,
-                        "error": "Serial não inicializada.",
-                    }
-
-
-                self._serial.write(command.encode("utf-8"))
-                self._serial.flush()
-
-                response = self._serial.readline().decode("utf-8", errors="ignore").strip()
-
-                return {
-                    "success": True,
-                    "command_sent": command.strip(),
-                    "response": response,
-                }
-
-        except Exception as error:
-            self.disconnect()
-            return {
-                "success": False,
-                "error": str(error),
-            }        
+ 
