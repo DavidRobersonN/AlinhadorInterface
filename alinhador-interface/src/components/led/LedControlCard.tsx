@@ -8,7 +8,6 @@ interface LedControlCardProps {
   ledState: LedState
   onTurnOn: () => void
   onTurnOff: () => void
-  onToggle: () => void
 }
 
 // Componente visual principal do módulo do LED.
@@ -18,7 +17,6 @@ export function LedControlCard({
   ledState,
   onTurnOn,
   onTurnOff,
-  onToggle,
 }: LedControlCardProps) {
   return (
     <section className="card">
@@ -39,10 +37,6 @@ export function LedControlCard({
 
         <ActionButton onClick={onTurnOff} disabled={!connected}>
           Desligar
-        </ActionButton>
-
-        <ActionButton onClick={onToggle} disabled={!connected}>
-          Alternar
         </ActionButton>
       </div>
     </section>

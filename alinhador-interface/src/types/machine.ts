@@ -1,20 +1,21 @@
-export type MotorDirection = 'tighten' | 'loosen'
+import type { LedStatusMessage, LedCommand } from './led'
 
-export interface RotateMotorPayload {
-  action: 'rotate_motor'
-  direction: MotorDirection
-  turns?: number
-  steps?: number
+export interface ConnectionMessage {
+  type: 'connection'
+  status: 'connected' | 'disconnected'
+  message: string
 }
 
-export interface MotorStatusMessage {
-  type: 'motor_status'
+export interface ErrorMessage {
+  type: 'error'
   message: string
-  direction: MotorDirection
-  steps: number
-  command: string
-  serial?: {
-    success: boolean
-    command_sent: string
-  }
+}
+
+export type MachineMessage =
+  | LedStatusMessage
+  | ConnectionMessage
+  | ErrorMessage
+
+export type MachinePayload = {
+  command: LedCommand
 }

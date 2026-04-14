@@ -1,32 +1,23 @@
-import { useCallback, useEffect, useState } from 'react'
-import type { LedCommand, LedState, LedStatusMessage } from '../types/led'
+import { useCallback } from 'react'
+import type { LedCommand, LedState } from '../types/led'
 import type { MachineMessage } from '../types/machine'
 
 type UseLedControlsParams = {
-  send: (payload: Record<string, unknown>) => boolean
+  send: (payload: { command: LedCommand }) => boolean
   lastMessage: MachineMessage | null
 }
 
-// Hook responsável apenas pela parte do LED.
-// Ele:
-// - lê mensagens do tipo led_status
-// - atualiza o estado do LED
-// - expõe funções prontas para a interface
 export function useLedControls({ send, lastMessage }: UseLedControlsParams) {
-  const [ledState, setLedState] = useState<LedState>('Desconhecido')
-
-  useEffect(() => {
-    if (!lastMessage) return
-
-    if (lastMessage.type === 'led_status') {
-      const data = lastMessage as LedStatusMessage
-      setLedState(data.state === 'ON' ? 'Ligado' : 'Desligado')
-    }
-  }, [lastMessage])
+  const ledState: LedState =
+    lastMessage?.type === 'led_status'
+      ? lastMessage.state === 'ON'
+        ? 'Ligado'
+        : 'Desligado'
+      : 'Desconhecido'
 
   const sendCommand = useCallback(
     (command: LedCommand) => {
-      send({ command })
+      return send({ command })
     },
     [send],
   )
@@ -39,14 +30,9 @@ export function useLedControls({ send, lastMessage }: UseLedControlsParams) {
     sendCommand('OFF')
   }, [sendCommand])
 
-  const toggleLed = useCallback(() => {
-    sendCommand('TOGGLE')
-  }, [sendCommand])
-
   return {
     ledState,
     turnLedOn,
     turnLedOff,
-    toggleLed,
   }
 }

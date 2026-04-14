@@ -10,7 +10,7 @@ import type { MachineMessage, MachinePayload } from '../types/machine'
 // - guardar a última mensagem recebida
 // - expor uma função genérica send
 export function useMachineConnection() {
-  const [connected, setConnected] = useState<boolean>(false)
+  const [connected, setConnected] = useState(false)
   const [lastMessage, setLastMessage] = useState<MachineMessage | null>(null)
   const [connectionError, setConnectionError] = useState<string | null>(null)
 
@@ -28,8 +28,14 @@ export function useMachineConnection() {
 
     socket.onmessage = (event: MessageEvent) => {
       try {
-        const data: MachineMessage = JSON.parse(event.data)
+        const data = JSON.parse(event.data) as MachineMessage
+        console.log('Mensagem parseada:', data)
+
         setLastMessage(data)
+
+        if (data.type === 'error') {
+          setConnectionError(data.message)
+        }
       } catch (error) {
         console.error('Erro ao interpretar mensagem do WebSocket:', error)
       }
@@ -47,6 +53,7 @@ export function useMachineConnection() {
 
     return () => {
       socket.close()
+      socketRef.current = null
     }
   }, [])
 

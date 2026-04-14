@@ -9,7 +9,7 @@ export function HomePage() {
   const { connected, lastMessage, send } = useMachineConnection()
 
   // Hook específico do LED, usando a conexão principal
-  const { ledState, turnLedOn, turnLedOff, toggleLed } = useLedControls({
+  const { ledState, turnLedOn, turnLedOff } = useLedControls({
     send,
     lastMessage,
   })
@@ -21,7 +21,6 @@ export function HomePage() {
         ledState={ledState}
         onTurnOn={turnLedOn}
         onTurnOff={turnLedOff}
-        onToggle={toggleLed}
       />
     </main>
   )
