@@ -261,8 +261,13 @@ class SerialService:
 
                 # Envia o comando em bytes pela serial.
                 self._serial.write(command.encode("utf-8"))
+<<<<<<< HEAD
 
                 # Força o envio imediato.
+=======
+                print(f"SerialService: Comando enviado pelo send_command para o Arduino: '{command.strip()}'")  # Log para depuração
+                # Força o envio imediato do buffer de escrita.
+>>>>>>> 47ba729f215a104d88f7270af8d69636bac03193
                 self._serial.flush()
 
             logger.info("Comando enviado para serial: %s", command.strip())
@@ -305,6 +310,7 @@ class SerialService:
                 # Lê uma linha da serial, converte de bytes para texto
                 # e remove espaços/quebra de linha das pontas.
                 line = self._serial.readline().decode("utf-8", errors="ignore").strip()
+                print(f"SerialService: Linha lida pelo readLine da serial Vindo do Arduino: '{line}'")  # Log para depuração
 
             if line:
                 logger.info("Linha recebida da serial: %s", line)
@@ -317,6 +323,7 @@ class SerialService:
             logger.warning("Erro ao ler da serial: %s", error)
             self.disconnect()
             return None
+<<<<<<< HEAD
 
     def send_command_and_read(self, command: str) -> dict:
         """
@@ -384,3 +391,6 @@ class SerialService:
 # Instância pronta para ser reutilizada em outros pontos do projeto,
 # se você quiser trabalhar com um objeto único de SerialService.
 serial_service = SerialService()
+=======
+ 
+>>>>>>> 47ba729f215a104d88f7270af8d69636bac03193

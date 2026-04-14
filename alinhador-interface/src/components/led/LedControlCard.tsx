@@ -18,6 +18,8 @@ export function LedControlCard({
   onTurnOn,
   onTurnOff,
 }: LedControlCardProps) {
+    console.log('LedControlCard renderizou. ledState =', ledState)
+
   return (
     <section className="card">
       <h1 className="title">LED com React + Django + Arduino</h1>
@@ -38,6 +40,10 @@ export function LedControlCard({
         <ActionButton onClick={onTurnOff} disabled={!connected}>
           Desligar
         </ActionButton>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 47ba729f215a104d88f7270af8d69636bac03193
       </div>
     </section>
   )
